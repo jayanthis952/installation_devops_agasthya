@@ -1,0 +1,99 @@
+Note :
+*********
+SERVER SHOULD BE HAVING MINIMUM 4GB RAM
+*********
+
+sudo apt update
+sudo apt install openjdk-17-jdk -  y
+
+java -version
+
+#install post postgresql
+sudo apt install postgresql postgresql-contrib -y
+
+sudo -u postgres psql
+
+#inside postgres shell
+CREATE USER sonar WITH ENCRYPTED PASSWORD 'sonar@123';
+CREATE DATABASE sonarqube OWNER sonar;
+\q
+
+
+cd /opt
+sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.4.1.88267.zip
+sudo apt install unzip -y
+sudo unzip sonarqube-10.4.1.88267.zip
+sudo mv sonarqube-10.4.1.88267 sonarqube
+sudo chown -R $USER:$USER /opt/sonarqube
+
+
+sudo vi /opt/sonarqube/conf/sonar.properties
+#add or uncomment and edmit below lines
+sonar.jdbc.username=sonar
+sonar.jdbc.password=sonar@123
+sonar.jdbc.url=jdbc:postgresql://localhost/sonarqube
+
+
+sudo sysctl -w vm.max_map_count=262144
+echo 'vm.max_map_count=262144' | sudo tee -a /etc/sysctl.conf
+
+
+#start sonarqube manually and test 
+cd /opt/sonarqube/bin/linux-x86-64
+./sonar.sh start
+
+#to stop once validation is complete
+./sonar.sh stop 
+
+
+#to check logs
+tail -f /opt/sonarqube/logs/sonar.log
+
+#if running fine try accessing via http
+http://<your server ip>:9000/login
+
+#default credentials
+username : admin
+password : admin
+
+
+
+
+#optional
+
+#to convert sonarqube into a systemd process
+
+sudo vi /etc/systemd/system/sonarqube.service
+
+#add below contents in the file
+#################
+[Unit]
+Description=SonarQube service
+After=syslog.target network.target
+
+[Service]
+Type=forking
+ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+User=ubuntu
+Group=ubuntu
+Restart=always
+LimitNOFILE=65536
+LimitNPROC=4096
+TimeoutStartSec=300
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target
+#######################
+
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable sonarqube
+
+sudo systemctl start sonarqube
+sudo systemctl status sonarqube
+
+
+
+
