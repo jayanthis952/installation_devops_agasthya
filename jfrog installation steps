@@ -1,0 +1,81 @@
+Pre-requisites : 4GB RAM for the instance
+
+UBUNTU
+
+Install java first:
+====================
+
+sudo apt-get update
+
+sudo apt install openjdk-17-jdk -y
+
+
+
+get the package :
+================
+echo "deb https://releases.jfrog.io/artifactory/artifactory-debs focal main" | sudo tee /etc/apt/sources.list.d/jfrog.list
+
+sudo apt-get update
+
+sudo apt-get install jfrog-artifactory-oss -y
+
+
+
+
+edit the file:
+================
+
+sudo systemctl edit artifactory
+
+[Service]
+Environment=ARTIFACTORY_HOME=/opt/jfrog/artifactory
+
+
+install postgresql
+=================
+
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+sudo -u postgres psql
+
+CREATE USER artifactory WITH PASSWORD 'artifactory';
+CREATE DATABASE artifactory_db OWNER artifactory;
+GRANT ALL PRIVILEGES ON DATABASE artifactory_db TO artifactory;
+\q
+
+sudo vi /var/opt/jfrog/artifactory/etc/system.yaml
+
+uncomment and edit the lines in the file
+=======================================
+
+database:
+  type: postgresql
+  driver: org.postgresql.Driver
+  url: jdbc:postgresql://localhost:5432/artifactory_db
+  username: artifactory
+  password: artifactory
+
+
+sudo systemctl start artifactory
+sudo systemctl status artifactory
+sudo systemctl enable artifactory
+
+to check logs:
+===============
+
+sudo tail -f /opt/jfrog/artifactory/var/log/artifactory-service.log
+
+
+Access jfrog
+============
+http://<public-i.p>:8081
+
+
+
+
+
+
