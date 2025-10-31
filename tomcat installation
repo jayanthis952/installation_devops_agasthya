@@ -64,4 +64,8 @@ http://<public-ip>:8080
 
 
 
+#if we have not setup systemctl we can use below script to start the tomcat
 
+/opt/tomcat/bin/startup.sh
+(OR)
+/opt/tomcat/bin/catalina.sh
