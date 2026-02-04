@@ -56,6 +56,9 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 sudo systemctl enable --now kubelet
 
+sudo apt update
+sudo apt install -y conntrack
+
 ********************************************************************************
 
 Once all the above steps are done on all the nodes, run below commands on mentioned nodes
